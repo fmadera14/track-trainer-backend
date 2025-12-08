@@ -1,0 +1,81 @@
+# ---------------------------
+# Python
+# ---------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# ---------------------------
+# Entornos virtuales
+# ---------------------------
+venv/
+.env/
+.venv/
+env/
+
+# ---------------------------
+# FastAPI / Uvicorn / Logs
+# ---------------------------
+*.log
+logs/
+*.pid
+
+# ---------------------------
+# Configuración sensible
+# ---------------------------
+.env.local
+*.env
+*secret*
+*SECRET*
+*.key
+
+# ---------------------------
+# Base de datos / Postgres
+# ---------------------------
+*.db
+*.sqlite3
+migrations/versions/*.pyc
+
+# ---------------------------
+# PyCharm
+# ---------------------------
+.idea/
+*.iml
+
+# ---------------------------
+# VSCode
+# ---------------------------
+.vscode/
+.history/
+
+# ---------------------------
+# Docker
+# ---------------------------
+docker-compose.override.yml
+docker-data/
+*.dockerfile
+
+# ---------------------------
+# Node (si usas frontend en el mismo repo)
+# ---------------------------
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ---------------------------
+# Sistema operativo
+# ---------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------
+# Otros
+# ---------------------------
+__pypackages__/
+*.tmp
