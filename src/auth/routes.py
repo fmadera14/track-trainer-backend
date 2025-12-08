@@ -1,25 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from src.user.models import User
-from src.user.schema import UserCreate, UserResponse
+
 from config.database import get_db
 from config.password_utils import verify_password
 from config.security import create_access_token, hash_password
+from src.user.models import User
+from src.user.schema import UserCreate, UserResponse
 
 router = APIRouter()
-
-fake_db = {
-    "juan": {
-        "id": 1,
-        "username": "juan",
-        "password_hash": "$2b$12$8ysnxRl7n0qZO8s/uZnFEu718emF1BbiUTzhzqS3j/vWSJcvuFxba",  # "1234"
-    }
-}
-
-
-def get_user(username: str):
-    return fake_db.get(username)
 
 
 @router.post("/login")
@@ -46,11 +35,16 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="El nombre de usuario ya existe")
 
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="El correo ya esta en uso")
+
     # Crear usuario nuevo
     new_user = User(
         name=user_data.name,
         username=user_data.username,
         password_hash=hash_password(user_data.password),
+        email=user_data.email,
     )
 
     db.add(new_user)
