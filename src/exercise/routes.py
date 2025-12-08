@@ -65,19 +65,6 @@ async def edit_exercise(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    exercise_exists = (
-        db.query(Exercise)
-        .filter(
-            Exercise.name == exercise_data.name, Exercise.user_id == current_user.id
-        )
-        .first()
-    )
-
-    if exercise_exists and exercise_data.name != exercise_exists.name:
-        raise HTTPException(
-            status_code=400, detail="El nombre del ejercicio ya está en uso"
-        )
-
     exercise = (
         db.query(Exercise)
         .filter(Exercise.id == exercise_id, Exercise.user_id == current_user.id)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -38,3 +38,45 @@ async def create_session(
     db.refresh(new_session)
 
     return new_session
+
+
+@router.put("/{session_id}")
+async def edit_work_session(
+    session_id: int,
+    session_data: WorkoutSessionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    session_exists = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.name == session_data.name,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if session_exists and session_data.name != session_exists.name:
+        raise HTTPException(
+            status_code=400, detail="El nombre de la sesión ya está en uso"
+        )
+
+    session = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(status_code=404, detail="No se encontró el ejercicio")
+
+    session.name = session_data.name
+    session.notes = session_data.notes
+    session.session_date = session_data.session_date
+
+    db.commit()
+    db.refresh(session)
+
+    return session
