@@ -56,3 +56,48 @@ async def create_exercise(
     db.refresh(new_exercise)
 
     return new_exercise
+
+
+@router.put("/{exercise_id}")
+async def edit_exercise(
+    exercise_id: int,
+    exercise_data: ExerciseCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    exercise_exists = (
+        db.query(Exercise)
+        .filter(
+            Exercise.name == exercise_data.name and Exercise.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if exercise_exists and exercise_data.name != exercise_exists.name:
+        raise HTTPException(
+            status_code=400, detail="El nombre del ejercicio ya está en uso"
+        )
+
+    exercise = (
+        db.query(Exercise)
+        .filter(Exercise.id == exercise_id and Exercise.user_id == current_user.id)
+        .first()
+    )
+
+    if not exercise:
+        raise HTTPException(status_code=404, detail="No se encontró el ejercicio")
+
+    exercise.name = exercise_data.name
+    exercise.muscle_group = exercise_data.muscle_group
+    exercise.description = exercise_data.description
+
+    db.commit()
+    db.refresh(exercise)
+
+    return {
+        "id": exercise.id,
+        "name": exercise.name,
+        "description": exercise.description,
+        "muscle_group": exercise.muscle_group,
+        "created_at": exercise.created_at,
+    }
