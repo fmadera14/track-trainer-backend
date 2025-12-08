@@ -27,11 +27,11 @@ def edit_profile(
     db: Session = Depends(get_db),
 ):
     username_exists = db.query(User).filter(User.username == user_edit.username).first()
-    if username_exists:
+    if username_exists and username_exists.username != current_user.username:
         raise HTTPException(status_code=400, detail="El nombre de usuario ya existe")
 
     email_exists = db.query(User).filter(User.email == user_edit.email).first()
-    if email_exists:
+    if email_exists and email_exists.email != current_user.email:
         raise HTTPException(status_code=400, detail="El correo ya existe")
 
     current_user.name = user_edit.name
@@ -41,4 +41,10 @@ def edit_profile(
     db.commit()
     db.refresh(current_user)
 
-    return current_user
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "name": current_user.name,
+        "email": current_user.email,
+        "created_at": current_user.created_at,
+    }
