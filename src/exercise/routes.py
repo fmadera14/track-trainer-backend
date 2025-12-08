@@ -12,9 +12,20 @@ router = APIRouter()
 
 @router.get("/")
 async def list_exercises(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    name: str | None = None,
+    muscle_group: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    exercises = db.query(Exercise).filter(Exercise.user_id == current_user.id).all()
+    query = db.query(Exercise).filter(Exercise.user_id == current_user.id)
+
+    if name:
+        query = query.filter(Exercise.name.ilike(f"%{name}%"))
+
+    if muscle_group:
+        query = query.filter(Exercise.muscle_group.ilike(f"%{muscle_group}%"))
+
+    exercises = query.all()
     return exercises
 
 
