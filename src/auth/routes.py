@@ -9,18 +9,6 @@ from config.security import create_access_token, hash_password
 
 router = APIRouter()
 
-fake_db = {
-    "juan": {
-        "id": 1,
-        "username": "juan",
-        "password_hash": "$2b$12$8ysnxRl7n0qZO8s/uZnFEu718emF1BbiUTzhzqS3j/vWSJcvuFxba",  # "1234"
-    }
-}
-
-
-def get_user(username: str):
-    return fake_db.get(username)
-
 
 @router.post("/login")
 async def login(

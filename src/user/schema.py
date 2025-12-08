@@ -24,3 +24,9 @@ class UserResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserEdit(BaseModel):
+    name: str
+    username: str
+    email: str
