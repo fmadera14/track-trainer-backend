@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -68,7 +68,7 @@ async def edit_exercise(
     exercise_exists = (
         db.query(Exercise)
         .filter(
-            Exercise.name == exercise_data.name and Exercise.user_id == current_user.id
+            Exercise.name == exercise_data.name, Exercise.user_id == current_user.id
         )
         .first()
     )
@@ -80,7 +80,7 @@ async def edit_exercise(
 
     exercise = (
         db.query(Exercise)
-        .filter(Exercise.id == exercise_id and Exercise.user_id == current_user.id)
+        .filter(Exercise.id == exercise_id, Exercise.user_id == current_user.id)
         .first()
     )
 
@@ -101,3 +101,26 @@ async def edit_exercise(
         "muscle_group": exercise.muscle_group,
         "created_at": exercise.created_at,
     }
+
+
+@router.delete("/{exercise_id}")
+async def delete_exercise(
+    exercise_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    exercise = (
+        db.query(Exercise)
+        .filter(Exercise.id == exercise_id, Exercise.user_id == current_user.id)
+        .first()
+    )
+
+    if not exercise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found"
+        )
+
+    db.delete(exercise)
+    db.commit()
+
+    return {"message": "Ejercicio eliminado"}
