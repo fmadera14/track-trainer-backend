@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     name: str = Field(..., min_length=3)
     username: str = Field(..., min_length=3)
     password: str = Field(..., min_length=8)
+    email: str = Field(..., min_length=6)
 
 
 class UserRead(BaseModel):
