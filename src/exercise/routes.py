@@ -14,9 +14,7 @@ router = APIRouter()
 async def list_exercises(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
-    exercises: list[Exercise] = db.query(Exercise).filter(
-        Exercise.user_id == current_user.id
-    )
+    exercises = db.query(Exercise).filter(Exercise.user_id == current_user.id).all()
     return exercises
 
 
