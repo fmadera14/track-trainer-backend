@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config.database import Base
 
@@ -14,3 +15,5 @@ class User(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     last_login = Column(TIMESTAMP, server_default=func.now())
     active = Column(Boolean, default=False)
+
+    exercises = relationship("Exercise", back_populates="user")
