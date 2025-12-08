@@ -41,8 +41,6 @@ async def login(
 
 @router.post("/register", response_model=UserResponse)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    print("PASSWORD RECIBIDO:", repr(user_data.password))
-    print("BYTES:", len(user_data.password.encode("utf-8")))
     # ¿Existe el usuario?
     existing_user = db.query(User).filter(User.username == user_data.username).first()
     if existing_user:

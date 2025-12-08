@@ -33,7 +33,6 @@ Base = declarative_base()
 
 # Dependencia para obtener sesión DB en FastAPI
 def get_db():
-    print("URL:", repr(DATABASE_URL))
     db = SessionLocal()
     try:
         yield db
