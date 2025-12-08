@@ -10,6 +10,16 @@ from src.workout_session.schema import WorkoutSessionCreate, WorkoutSessionRead
 router = APIRouter()
 
 
+@router.get("/")
+async def list_sessions(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    workout_sessions = (
+        db.query(WorkoutSession).filter(WorkoutSession.user_id == current_user.id).all()
+    )
+    return workout_sessions
+
+
 @router.post("/")
 async def create_session(
     session_data: WorkoutSessionCreate,
