@@ -15,6 +15,7 @@ def get_profile(current_user: User = Depends(get_current_user)):
         "id": current_user.id,
         "name": current_user.name,
         "username": current_user.username,
+        "email": current_user.email,
         "created_at": current_user.created_at,
     }
 
