@@ -36,5 +36,6 @@ def get_db():
         db.close()
 
 
-from src.user.models import User
-from src.exercise.models import Exercise
+from src.user.models import User as _
+from src.exercise.models import Exercise as _
+from src.workout_session.models import WorkoutSession as _

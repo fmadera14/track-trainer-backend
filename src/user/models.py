@@ -17,3 +17,4 @@ class User(Base):
     active = Column(Boolean, default=False)
 
     exercises = relationship("Exercise", back_populates="user")
+    workout_session = relationship("WorkoutSession", back_populates="user")
