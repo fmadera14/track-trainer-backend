@@ -34,3 +34,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+from src.user.models import User
+from src.exercise.models import Exercise
