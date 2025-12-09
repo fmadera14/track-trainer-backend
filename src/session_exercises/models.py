@@ -20,6 +20,6 @@ class SessionExercises(Base):
     sets = relationship(
         "Set",
         back_populates="session_exercise",
-        cascade="all, delete",
+        cascade="all, delete-orphan",
         passive_deletes=True,
     )

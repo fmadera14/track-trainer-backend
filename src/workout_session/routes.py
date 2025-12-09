@@ -47,13 +47,37 @@ async def detail_session(
             status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
         )
 
-    exercises = (
-        db.query(Exercise)
-        .join(SessionExercises, SessionExercises.exercise_id == Exercise.id)
+    # Traer ejercicios + sets
+    session_exercises = (
+        db.query(SessionExercises)
+        .join(Exercise, Exercise.id == SessionExercises.exercise_id)
         .filter(SessionExercises.session_id == session_id)
         .order_by(SessionExercises.order_index.asc())
         .all()
     )
+
+    # Formar respuesta completa
+    exercises_output = []
+    for se in session_exercises:
+        exercises_output.append(
+            {
+                "id": se.exercise.id,
+                "name": se.exercise.name,
+                "description": se.exercise.description,
+                "session_exercise_id": se.id,
+                "order_index": se.order_index,
+                "sets": [
+                    {
+                        "id": s.id,
+                        "set_number": s.set_number,
+                        "reps": s.reps,
+                        "weight": s.weight,
+                        "unit": s.unit.value,
+                    }
+                    for s in se.sets
+                ],
+            }
+        )
 
     return {
         "id": session.id,
@@ -62,7 +86,7 @@ async def detail_session(
         "notes": session.notes,
         "created_at": session.created_at,
         "session_date": session.session_date,
-        "exercises": exercises,
+        "exercises": exercises_output,
     }
 
 
