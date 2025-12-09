@@ -82,6 +82,19 @@ async def edit_set(
 
 
 @router.delete("/{set_id}")
-async def delete_set():
-    # TODO
-    pass
+async def delete_set(
+    set_id: int,
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    set = db.query(Set).filter(Set.id == set_id).first()
+
+    if not set:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Set not found"
+        )
+
+    db.delete(set)
+    db.commit()
+
+    return {"detail": "Set deleted succesfully"}
