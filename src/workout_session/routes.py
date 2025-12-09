@@ -44,6 +44,7 @@ async def detail_session(
         db.query(Exercise)
         .join(SessionExercises, SessionExercises.exercise_id == Exercise.id)
         .filter(SessionExercises.session_id == session_id)
+        .order_by(SessionExercises.order_index.asc())
         .all()
     )
 
