@@ -49,7 +49,12 @@ async def detail_session(
     )
 
     return {
-        "session": session,
+        "id": session.id,
+        "user_id": session.user_id,
+        "name": session.name,
+        "notes": session.notes,
+        "created_at": session.created_at,
+        "session_date": session.session_date,
         "exercises": exercises,
     }
 
