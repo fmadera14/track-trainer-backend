@@ -17,3 +17,4 @@ class WorkoutSession(Base):
     session_date = Column(Date, nullable=False)
 
     user = relationship("User", back_populates="workout_session")
+    session_exercises = relationship("SessionExercises", back_populates="session")
