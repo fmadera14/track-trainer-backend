@@ -5,7 +5,12 @@ from config.database import get_db
 from src.auth.dependencies import get_current_user
 from src.user.models import User
 from src.workout_session.models import WorkoutSession
-from src.workout_session.schema import AddExercises, UpdateOrder, WorkoutSessionCreate
+from src.workout_session.schema import (
+    AddExercises,
+    UpdateOrder,
+    RemoveExercises,
+    WorkoutSessionCreate,
+)
 from src.session_exercises.models import SessionExercises
 from src.exercise.models import Exercise
 
@@ -236,4 +241,68 @@ async def reorder_session_exercises(
     return {
         "session_id": session_id,
         "new_order": data.exercise_ids,
+    }
+
+
+@router.delete("/{session_id}/remove-exercises")
+async def remove_exercises_from_session(
+    session_id: int,
+    data: RemoveExercises,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # 1. verificar sesión
+    session = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.id == session_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # 2. obtener solo ejercicios que estén realmente en la sesión
+    existing_links = (
+        db.query(SessionExercises)
+        .filter(
+            SessionExercises.session_id == session_id,
+            SessionExercises.exercise_id.in_(data.exercise_ids),
+        )
+        .all()
+    )
+
+    if not existing_links:
+        raise HTTPException(
+            status_code=400,
+            detail="None of the provided exercises are in this session",
+        )
+
+    removed_ids = [link.exercise_id for link in existing_links]
+
+    # 3. eliminar vínculos
+    for link in existing_links:
+        db.delete(link)
+
+    db.commit()
+
+    # 4. Reordenar order_index para no dejar huecos
+    remaining = (
+        db.query(SessionExercises)
+        .filter(SessionExercises.session_id == session_id)
+        .order_by(SessionExercises.order_index.asc())
+        .all()
+    )
+
+    for idx, link in enumerate(remaining, start=1):
+        link.order_index = idx
+
+    db.commit()
+
+    return {
+        "session_id": session_id,
+        "removed_exercises": removed_ids,
+        "remaining_count": len(remaining),
     }

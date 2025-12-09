@@ -25,3 +25,7 @@ class AddExercises(BaseModel):
 
 class UpdateOrder(BaseModel):
     exercise_ids: list[int]
+
+
+class RemoveExercises(BaseModel):
+    exercise_ids: list[int]
