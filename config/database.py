@@ -39,4 +39,5 @@ def get_db():
 from src.user.models import User as _
 from src.exercise.models import Exercise as _
 from src.session_exercises.models import SessionExercises as _
+from src.sets.models import Set as _
 from src.workout_session.models import WorkoutSession as _

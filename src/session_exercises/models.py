@@ -17,3 +17,9 @@ class SessionExercises(Base):
 
     session = relationship("WorkoutSession", back_populates="session_exercises")
     exercise = relationship("Exercise", back_populates="session_exercises")
+    sets = relationship(
+        "Set",
+        back_populates="session_exercise",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
