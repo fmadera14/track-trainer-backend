@@ -17,3 +17,7 @@ class WorkoutSessionRead(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class AddExercises(BaseModel):
+    exercise_ids: list[int]

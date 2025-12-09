@@ -5,7 +5,7 @@ from config.database import get_db
 from src.auth.dependencies import get_current_user
 from src.user.models import User
 from src.workout_session.models import WorkoutSession
-from src.workout_session.schema import WorkoutSessionCreate, WorkoutSessionRead
+from src.workout_session.schema import AddExercises, WorkoutSessionCreate
 from src.session_exercises.models import SessionExercises
 from src.exercise.models import Exercise
 
@@ -71,6 +71,73 @@ async def create_session(
     db.refresh(new_session)
 
     return new_session
+
+
+@router.post("/{session_id}/add-exercises")
+async def add_exercises_to_session(
+    session_id: int,
+    data: AddExercises,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # 1. verificar que la sesión existe
+    session = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.id == session_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # 2. obtener los ejercicios
+    exercises = db.query(Exercise).filter(Exercise.id.in_(data.exercise_ids)).all()
+
+    if len(exercises) != len(data.exercise_ids):
+        raise HTTPException(
+            status_code=400, detail="One or more exercise IDs do not exist"
+        )
+
+    # 3. evitar duplicados
+    existing = (
+        db.query(SessionExercises.exercise_id)
+        .filter(SessionExercises.session_id == session_id)
+        .all()
+    )
+    existing_ids = {e[0] for e in existing}
+
+    new_ids = [eid for eid in data.exercise_ids if eid not in existing_ids]
+
+    # 4. obtener el último order_index
+    last_order = (
+        db.query(SessionExercises)
+        .filter(SessionExercises.session_id == session_id)
+        .order_by(SessionExercises.order_index.desc())
+        .first()
+    )
+
+    next_index = last_order.order_index + 1 if last_order else 1
+
+    # 5. insertar ejercicios con order_index
+    for exercise_id in new_ids:
+        link = SessionExercises(
+            session_id=session_id,
+            exercise_id=exercise_id,
+            order_index=next_index,
+        )
+        next_index += 1
+        db.add(link)
+
+    db.commit()
+
+    return {
+        "session_id": session_id,
+        "added_exercises": new_ids,
+        "skipped_duplicates": list(existing_ids.intersection(data.exercise_ids)),
+    }
 
 
 @router.put("/{session_id}")
