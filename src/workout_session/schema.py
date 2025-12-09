@@ -21,3 +21,7 @@ class WorkoutSessionRead(BaseModel):
 
 class AddExercises(BaseModel):
     exercise_ids: list[int]
+
+
+class UpdateOrder(BaseModel):
+    exercise_ids: list[int]

@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import aliased, Session
+from sqlalchemy.orm import Session
 
 from config.database import get_db
 from src.auth.dependencies import get_current_user
 from src.user.models import User
 from src.workout_session.models import WorkoutSession
-from src.workout_session.schema import AddExercises, WorkoutSessionCreate
+from src.workout_session.schema import AddExercises, UpdateOrder, WorkoutSessionCreate
 from src.session_exercises.models import SessionExercises
 from src.exercise.models import Exercise
 
@@ -186,3 +186,54 @@ async def edit_work_session(
     db.refresh(session)
 
     return session
+
+
+@router.put("/{session_id}/reorder")
+async def reorder_session_exercises(
+    session_id: int,
+    data: UpdateOrder,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # 1. verificar que la sesión existe y pertenece al usuario
+    session = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.id == session_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # 2. obtener los ejercicios reales en esta sesión
+    session_exercises = (
+        db.query(SessionExercises)
+        .filter(SessionExercises.session_id == session_id)
+        .all()
+    )
+
+    current_ids = {se.exercise_id for se in session_exercises}
+
+    # 3. validar que los enviados coinciden con los actuales
+    if set(data.exercise_ids) != current_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="Exercise list does not match current session exercises",
+        )
+
+    # 4. actualizar order_index según el nuevo orden
+    for new_index, exercise_id in enumerate(data.exercise_ids, start=1):
+        db.query(SessionExercises).filter(
+            SessionExercises.session_id == session_id,
+            SessionExercises.exercise_id == exercise_id,
+        ).update({"order_index": new_index})
+
+    db.commit()
+
+    return {
+        "session_id": session_id,
+        "new_order": data.exercise_ids,
+    }
