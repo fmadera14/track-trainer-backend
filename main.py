@@ -8,10 +8,10 @@ from src.workout_session.routes import router as workout_session_router
 
 app = FastAPI()
 
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(exercise_router, prefix="/exercise", tags=["Exercise"])
-app.include_router(sets_router, prefix="/set", tags=["Sets"])
-app.include_router(user_router, prefix="/user", tags=["User"])
+app.include_router(auth_router, prefix="/v1/auth", tags=["Auth"])
+app.include_router(exercise_router, prefix="/v1/exercise", tags=["Exercise"])
+app.include_router(sets_router, prefix="/v1/set", tags=["Sets"])
+app.include_router(user_router, prefix="/v1/user", tags=["User"])
 app.include_router(
-    workout_session_router, prefix="/workout-session", tags=["Workout Session"]
+    workout_session_router, prefix="/v1/workout-session", tags=["Workout Session"]
 )
