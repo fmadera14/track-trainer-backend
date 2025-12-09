@@ -12,3 +12,10 @@ class SetCreate(BaseModel):
     reps: int
     weight: float
     unit: WeightUnit
+
+
+class SetUpdate(BaseModel):
+    set_number: int
+    reps: int
+    weight: float
+    unit: WeightUnit
