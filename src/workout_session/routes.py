@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -43,7 +43,9 @@ async def detail_session(
     )
 
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
 
     exercises = (
         db.query(Exercise)
@@ -102,14 +104,17 @@ async def add_exercises_to_session(
     )
 
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
 
     # 2. obtener los ejercicios
     exercises = db.query(Exercise).filter(Exercise.id.in_(data.exercise_ids)).all()
 
     if len(exercises) != len(data.exercise_ids):
         raise HTTPException(
-            status_code=400, detail="One or more exercise IDs do not exist"
+            status_code=status.HTTP_400_NOT_FOUND,
+            detail="One or more exercise IDs do not exist",
         )
 
     # 3. evitar duplicados
@@ -169,7 +174,8 @@ async def edit_work_session(
 
     if session_exists and session_data.name != session_exists.name:
         raise HTTPException(
-            status_code=400, detail="El nombre de la sesión ya está en uso"
+            status_code=status.HTTP_400_NOT_FOUND,
+            detail="El nombre de la sesión ya está en uso",
         )
 
     session = (
@@ -181,7 +187,9 @@ async def edit_work_session(
     )
 
     if not session:
-        raise HTTPException(status_code=404, detail="No se encontró el ejercicio")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No se encontró el ejercicio"
+        )
 
     session.name = session_data.name
     session.notes = session_data.notes
@@ -211,7 +219,9 @@ async def reorder_session_exercises(
     )
 
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
 
     # 2. obtener los ejercicios reales en esta sesión
     session_exercises = (
@@ -225,7 +235,7 @@ async def reorder_session_exercises(
     # 3. validar que los enviados coinciden con los actuales
     if set(data.exercise_ids) != current_ids:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_NOT_FOUND,
             detail="Exercise list does not match current session exercises",
         )
 
@@ -262,7 +272,9 @@ async def remove_exercises_from_session(
     )
 
     if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
 
     # 2. obtener solo ejercicios que estén realmente en la sesión
     existing_links = (
@@ -276,7 +288,7 @@ async def remove_exercises_from_session(
 
     if not existing_links:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_NOT_FOUND,
             detail="None of the provided exercises are in this session",
         )
 
@@ -306,3 +318,28 @@ async def remove_exercises_from_session(
         "removed_exercises": removed_ids,
         "remaining_count": len(remaining),
     }
+
+
+@router.delete("/{session_id}")
+async def delete_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    session = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.id == session_id, WorkoutSession.user_id == current_user.id
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Workout session not found"
+        )
+
+    db.delete(session)
+    db.commit()
+
+    return {"detail": "Workout session deleted succesfully"}

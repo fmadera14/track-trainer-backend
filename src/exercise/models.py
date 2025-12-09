@@ -17,4 +17,9 @@ class Exercise(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     user = relationship("User", back_populates="exercises")
-    session_exercises = relationship("SessionExercises", back_populates="exercise")
+    session_exercises = relationship(
+        "SessionExercises",
+        back_populates="exercise",
+        cascade="all, delete",
+        passive_deletes=True,
+    )

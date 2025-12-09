@@ -110,4 +110,4 @@ async def delete_exercise(
     db.delete(exercise)
     db.commit()
 
-    return {"message": "Ejercicio eliminado"}
+    return {"detail": "Ejercicio eliminado"}
