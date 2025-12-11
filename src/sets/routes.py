@@ -130,14 +130,28 @@ async def delete_set(
     _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    set = db.query(Set).filter(Set.id == set_id).first()
+    set_to_delete = db.query(Set).filter(Set.id == set_id).first()
 
-    if not set:
+    if not set_to_delete:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Set not found"
         )
 
-    db.delete(set)
+    session_exercise_id = set_to_delete.session_exercise_id
+
+    db.delete(set_to_delete)
     db.commit()
 
-    return {"detail": "Set deleted succesfully"}
+    remaining_sets = (
+        db.query(Set)
+        .filter(Set.session_exercise_id == session_exercise_id)
+        .order_by(Set.order_index.asc())
+        .all()
+    )
+
+    for index, s in enumerate(remaining_sets, start=1):
+        s.order_index = index
+
+    db.commit()
+
+    return {"detail": "Set deleted and order_index updated successfully"}
