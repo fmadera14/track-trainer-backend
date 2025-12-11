@@ -21,3 +21,12 @@ class SetUpdate(BaseModel):
     weight: float
     unit: WeightUnit
     order_index: int
+
+
+class SetOrderItem(BaseModel):
+    set_id: int
+    order_index: int
+
+
+class ReorderSetsRequest(BaseModel):
+    orders: list[SetOrderItem]
