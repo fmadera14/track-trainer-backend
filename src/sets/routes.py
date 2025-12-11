@@ -81,10 +81,36 @@ async def edit_set(
             status_code=status.HTTP_404_NOT_FOUND, detail="Set not found"
         )
 
+    session_exercise = (
+        db.query(SessionExercises)
+        .filter(SessionExercises.id == set.session_exercise_id)
+        .first()
+    )
+
+    if not session_exercise:
+        raise HTTPException(status_code=404, detail="Session exercise not found")
+
+    existing_set = (
+        db.query(Set)
+        .filter(
+            Set.session_exercise_id == session_exercise.id,
+            Set.order_index == data.order_index,
+            Set.id != set_id,
+        )
+        .first()
+    )
+
+    if existing_set:
+        raise HTTPException(
+            status_code=400,
+            detail=f"order_index {data.order_index} is already in use for this exercise in this session",
+        )
+
     set.reps = data.reps
     set.set_number = data.set_number
     set.unit = data.unit
     set.weight = data.weight
+    set.order_index = data.order_index
 
     db.commit()
     db.refresh(set)
