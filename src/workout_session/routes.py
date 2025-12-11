@@ -73,6 +73,7 @@ async def detail_session(
                         "reps": s.reps,
                         "weight": s.weight,
                         "unit": s.unit.value,
+                        "order_index": s.order_index,
                     }
                     for s in se.sets
                 ],
