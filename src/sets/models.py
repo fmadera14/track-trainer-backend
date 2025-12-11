@@ -15,5 +15,6 @@ class Set(Base):
     reps = Column(Integer, nullable=False)
     weight = Column(Float, nullable=True)
     unit = Column(Enum(WeightUnit, name="weight_unit"), nullable=False)
+    order_index = Column(Integer, nullable=False)
 
     session_exercise = relationship("SessionExercises", back_populates="sets")

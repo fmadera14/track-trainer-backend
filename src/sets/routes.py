@@ -9,6 +9,7 @@ from src.sets.models import Set
 from src.sets.schemas import SetCreate, SetUpdate
 from src.user.models import User
 from src.workout_session.models import WorkoutSession
+from src.exercise.models import Exercise
 
 router = APIRouter()
 
@@ -35,12 +36,28 @@ async def add_set_to_session_exercise(
     if not session_exercise:
         raise HTTPException(status_code=404, detail="Session exercise not found")
 
+    existing_set = (
+        db.query(Set)
+        .filter(
+            Set.session_exercise_id == session_exercise.id,
+            Set.order_index == data.order_index,
+        )
+        .first()
+    )
+
+    if existing_set:
+        raise HTTPException(
+            status_code=400,
+            detail=f"order_index {data.order_index} is already in use for this exercise in this session",
+        )
+
     new_set = Set(
         session_exercise_id=session_exercise.id,
         set_number=data.set_number,
         reps=data.reps,
         weight=data.weight,
         unit=data.unit,
+        order_index=data.order_index,
     )
 
     db.add(new_set)

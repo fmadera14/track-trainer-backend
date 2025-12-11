@@ -12,6 +12,7 @@ class SetCreate(BaseModel):
     reps: int
     weight: float
     unit: WeightUnit
+    order_index: int
 
 
 class SetUpdate(BaseModel):
@@ -19,3 +20,4 @@ class SetUpdate(BaseModel):
     reps: int
     weight: float
     unit: WeightUnit
+    order_index: int
