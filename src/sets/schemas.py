@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 from enum import Enum
 
 
@@ -29,4 +30,4 @@ class SetOrderItem(BaseModel):
 
 
 class ReorderSetsRequest(BaseModel):
-    orders: list[SetOrderItem]
+    orders: List[SetOrderItem]
