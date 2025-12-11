@@ -13,6 +13,29 @@ from src.workout_session.models import WorkoutSession
 router = APIRouter()
 
 
+@router.get("/{session_id}/{exercise_id}")
+async def list_sets_from_exercise(
+    session_id: int,
+    exercise_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    session_exercise = (
+        db.query(SessionExercises)
+        .join(WorkoutSession, WorkoutSession.id == SessionExercises.session_id)
+        .filter(
+            SessionExercises.session_id == session_id,
+            SessionExercises.exercise_id == exercise_id,
+            WorkoutSession.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    sets = db.query(Set).filter(Set.session_exercise_id == session_exercise.id).all()
+
+    return sets
+
+
 @router.post("/{session_id}/{exercise_id}")
 async def add_set_to_session_exercise(
     session_id: int,
@@ -23,7 +46,7 @@ async def add_set_to_session_exercise(
 ):
     session_exercise = (
         db.query(SessionExercises)
-        .join(WorkoutSession)
+        .join(WorkoutSession, WorkoutSession.id == SessionExercises.session_id)
         .filter(
             SessionExercises.session_id == session_id,
             SessionExercises.exercise_id == exercise_id,
